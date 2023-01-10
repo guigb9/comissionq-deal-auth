@@ -2,15 +2,14 @@ package com.barbozaguiii.comissiondealauth.security;
 
 import com.barbozaguiii.comissiondealauth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +27,10 @@ public class JWTConfiguration {
     private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private KeyComponent keyComponent;
+
+
     @Bean
     public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -43,8 +46,8 @@ public class JWTConfiguration {
                         .anyRequest()
                         .authenticated()
                 )
-                .httpBasic(httpSecurityHttpBasicConfigurer -> http.addFilterBefore(new JWTValidateFilter(), JWTAuthenticationFilter.class))
-                .addFilterAfter(new JWTAuthenticationFilter(authentication -> authentication), JWTValidateFilter.class)
+                .httpBasic(httpSecurityHttpBasicConfigurer -> http.addFilterBefore(new JWTValidateFilter(keyComponent.getKey()), JWTAuthenticationFilter.class))
+                .addFilterAfter(new JWTAuthenticationFilter(authentication -> authentication, keyComponent.getKey()), JWTValidateFilter.class)
                 .csrf()
                 .disable()
                 .sessionManagement()

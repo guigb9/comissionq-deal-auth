@@ -7,10 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -19,17 +16,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
-
+@RequiredArgsConstructor
 public class JWTValidateFilter extends GenericFilterBean {
 
     public static final String HEADER_ATTR = "Authorization";
     public static final String PREFIX_ATR = "Bearer ";
+    private final String key;
 
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(String token) {
-        String user = JWT.require(Algorithm.HMAC512(JWTAuthenticationFilter.TOKEN_SENHA)).build().verify(token).getSubject();
+        String user = JWT.require(Algorithm.HMAC512(key)).build().verify(token).getSubject();
 
-        if(Objects.isNull(user)) {
+        if (Objects.isNull(user)) {
             return null;
         }
 
@@ -38,18 +36,17 @@ public class JWTValidateFilter extends GenericFilterBean {
     }
 
 
-
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String attribute = request.getHeader(HEADER_ATTR);
 
-        if(Objects.isNull(attribute)) {
+        if (Objects.isNull(attribute)) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
 
-        if(!attribute.startsWith(PREFIX_ATR)){
+        if (!attribute.startsWith(PREFIX_ATR)) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }

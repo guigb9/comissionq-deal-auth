@@ -1,9 +1,12 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/comissiondeal
-    username: root
-    password: gui1019
+    url: @db.url@
+    username: @db.username@
+    password: @db.password@
     jpa:
       hibernate:
         ddl:
           auto: create
+
+key:
+  jwt: @jwt.key@
